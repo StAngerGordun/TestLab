@@ -183,7 +183,7 @@ namespace kyrsova
             }
             else
             {
-                MessageBox.Show("Заповніть правильно номера множин, які треба об'єднати", "Помилка вводу");
+                MessageBox.Show("Заповніть правильно номера множин, які треба об'єднати", "");
             }
             pictureBox1.Invalidate();
         }
