@@ -1,100 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 
 namespace kyrsova
 {
     public class dsu
     {
-        public List<List<int>> parent2 = new List<List<int>>();//кожен елемент List-а зберігає List, який зберігає елементи множин
-        //створення одноелементної множини
-        public void MakeSet(int x)
+        public List<List<int>> parent { get; private set; }//кожен елемент List-а зберігає List, який зберігає елементи множин
+
+        public dsu()
         {
-            List<int> list = new List<int>();
-            list.Add(x);
-            bool flag = true;
-            for (int i = 0; i < parent2.Count; i++)
-            {//перевіряємо чи наявний елемент в List-е, який ми хочемо долучити
-                if (parent2[i].Contains(x))
-                {
-                    flag = false;
-                }
-            }
-            if (flag == true)
-                parent2.Add(list);
-            else MessageBox.Show("Дана множина вже існує", "Помилка вводу");
+            parent = new List<List<int>>();//кожен елемент List-а зберігає List, який зберігає елементи множин
         }
-        //метод пошуку елементу в множині, який повертає номер множини, якій належить даний елемент
-        public int Find(int x)
+        //створення одноелементної множини
+        public void MakeSet(int union)
         {
-            int index = parent2.Count + 1;
-            for (int i = 0; i < parent2.Count; i++)
-                for (int j = 0; j < parent2[i].Count; j++)
-                {
-                    if (parent2[i].Contains(x))
-                    {
-                        index = i;
-                    }
-                }
-            return index;    // повертає індекс множини, якій належить даний елемент або повернене значення буде більше, ніж можлива дожина parent2
+            if (!parent.Any(t => t.Contains(union)))
+                parent.Add(new List<int> { union });
+            else throw new Exception("Помилка вводу. Дана множина вже існує");
+        }
+
+        //метод пошуку елементу в множині, який повертає номер множини, якій належить даний елемент
+        public int Find(int elementForFind)
+        {
+            for (int i = 0; i < parent.Count; i++)
+                if (parent[i].Contains(elementForFind))
+                    return i;
+            throw new KeyNotFoundException("Елемент не знайдено");// повертає індекс множини, якій належить даний елемент або повернене значення буде більше, ніж можлива дожина parent2
         }
 
         // метод об'єднання множин за заданими номерами
-        public void Unite(int x, int y)
+        public void UniteByNumbers(int firstNumber, int secondNumber)
         {
+            if (firstNumber >= parent.Count || secondNumber >= parent.Count)
+                throw new ArgumentException("Об'єднання даних множин не можливе, бо не існує одна або дві із множин");
+            //знаходження множини з меншою кількістю елементів
             int min, max;
-            if (x < parent2.Count && y < parent2.Count)
+            if (parent[firstNumber].Count >= parent[secondNumber].Count)
             {
-                //знаходження множини з меншою кількістю елементів
-                if (parent2[x].Count >= parent2[y].Count)
-                {
-                    min = y; max = x;
-                }
-                else { min = x; max = y; }
-                //поки менша множина не стане пустою вилучаємо з неї елементи і перезаписуємо їх в довшу множину
-                while (parent2[min].Count != 0)
-                {
-                    int r = parent2[min].First();
-                    parent2[min].Remove(r);
-                    parent2[max].Add(r);
-                }
-                parent2.RemoveAt(min);
+                min = secondNumber;
+                max = firstNumber;
             }
             else
             {
-                MessageBox.Show("Об'єднання даних множин не можливе, бо не існує одна або дві із множин", "Помилка");
+                min = firstNumber; 
+                max = secondNumber;
             }
+            //поки менша множина не стане пустою вилучаємо з неї елементи і перезаписуємо їх в довшу множину
+            parent[max].AddRange(parent[min]);
+            parent.RemoveAt(min);
         }
-        // об’єднання двох множин за елементами, що належать відповідним множинам
-        public void Unite2(int x, int y)
-        {
-            int min, max;
 
-            if (Find(x) <= parent2.Count && Find(y) <= parent2.Count)//перевіряємо чи існують множини, яким належать елементи
+        // об’єднання двох множин за елементами, що належать відповідним множинам
+        public void UniteByElements(int firstElement, int secondElement)
+        {
+            var first = Find(firstElement);
+            var second = Find(secondElement);
+            if (first > parent.Count || second > parent.Count)//перевіряємо чи існують множини, яким належать елементи
+                throw new ArgumentException("Об'єднання даних множин не можливе, бо не існує одного або двох заданих елементів");
+
+            if (first == second)//перевірка на належність одній множині
+                throw new Exception("Елементи належать одній множині");
+            int min, max;
+            if (parent[first].Count >= parent[second].Count) //знаходження множини з меншою кількістю елементів
             {
-                if (Find(x) != Find(y))//перевірка на належність одній множині
-                {
-                    if (parent2[Find(x)].Count >= parent2[Find(y)].Count)//знаходження множини з меншою кількістю елементів
-                    {
-                        min = Find(y); max = Find(x);
-                    }
-                    else { min = Find(x); max = Find(y); }
-                    while (parent2[min].Count != 0) //поки менша множина не стане пустою вилучаємо з неї елементи і перезаписуємо їх в довшу множину
-                    {
-                        int r = parent2[min].First();
-                        parent2[min].Remove(r);
-                        parent2[max].Add(r);
-                    }
-                    parent2.RemoveAt(min);
-                }
-                else { MessageBox.Show("Елементи належать одній множині", "Повідомлення"); }
+                min = second;
+                max = first;
             }
             else
             {
-                MessageBox.Show("Об'єднання даних множин не можливе, бо не існує одного або двох заданих елементів", "Помилка");
+                min = first; 
+                max = second;
             }
+            parent[max].AddRange(parent[min]);
+            parent.RemoveAt(min);
         }
 
     }

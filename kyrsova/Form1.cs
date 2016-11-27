@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace kyrsova
 {
-  
+
     public partial class Form1 : Form
     {
         public Form1()
@@ -18,10 +18,10 @@ namespace kyrsova
         }
 
         dsu dsu = new dsu();
-        
-        int set, find, setX, setY, X,Y;
+
+        int set, find, setX, setY, X, Y;
         int x1 = 100;
-        
+
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Ви хочете закрити програму?", "Вихід", MessageBoxButtons.YesNo);
@@ -47,37 +47,37 @@ namespace kyrsova
             SolidBrush drawBrush1 = new SolidBrush(Color.Red);//для виділення множин, що шукаються
             float y = 0;
 
-            for (int i = 0; i < dsu.parent2.Count; i++)
+            for (int i = 0; i < dsu.parent.Count; i++)
             {
-                e.Graphics.DrawRectangle(Pens.Black, 10, y, 50 * dsu.parent2[i].Count, 60);// прямокутник, в який будуть вписуватися елементи множини
-                for (int j = 0; j < dsu.parent2[i].Count; j++)
+                e.Graphics.DrawRectangle(Pens.Black, 10, y, 50 * dsu.parent[i].Count, 60);// прямокутник, в який будуть вписуватися елементи множини
+                for (int j = 0; j < dsu.parent[i].Count; j++)
                 {
-                    if (y < pictureBox1.Height-10)
+                    if (y < pictureBox1.Height - 10)
                     {
                         if (i == x1)//якщо поточна вершина є шуканою, то малюємо, використовуючи drawBrush1
                         {
-                            if (((40) * j + 10) < wid-10)
+                            if (((40) * j + 10) < wid - 10)
                             {
-                            PointF drawPoint = new PointF((40) * j + 15, y + 10);
-                            e.Graphics.DrawEllipse(Pens.Red, (40) * j + 15, y + 10, 40, 40);
-                            e.Graphics.DrawString(Convert.ToString(dsu.parent2[i][j]), drawFont, drawBrush1, drawPoint);
+                                PointF drawPoint = new PointF((40) * j + 15, y + 10);
+                                e.Graphics.DrawEllipse(Pens.Red, (40) * j + 15, y + 10, 40, 40);
+                                e.Graphics.DrawString(Convert.ToString(dsu.parent[i][j]), drawFont, drawBrush1, drawPoint);
                             }
                             else
                             {
-                               MessageBox.Show("Розширення екрану не дозволяє графічно зображувати бульше елементів", "Попередження");
+                                MessageBox.Show("Розширення екрану не дозволяє графічно зображувати бульше елементів", "Попередження");
                             }
                         }
                         else
                         {
-                            if (((40) * j + 5)< wid-10)
+                            if (((40) * j + 5) < wid - 10)
                             {
-                            PointF drawPoint = new PointF((40) * j + 15, y + 10);
-                            e.Graphics.DrawEllipse(Pens.Black, (40) * j + 15, y + 10, 40, 40);
-                            e.Graphics.DrawString(Convert.ToString(dsu.parent2[i][j]), drawFont, drawBrush, drawPoint);
+                                PointF drawPoint = new PointF((40) * j + 15, y + 10);
+                                e.Graphics.DrawEllipse(Pens.Black, (40) * j + 15, y + 10, 40, 40);
+                                e.Graphics.DrawString(Convert.ToString(dsu.parent[i][j]), drawFont, drawBrush, drawPoint);
                             }
-                             else
+                            else
                             {
-                              MessageBox.Show("Розширення екрану не дозволяє графічно зображувати бульше елементів", "Попередження");
+                                MessageBox.Show("Розширення екрану не дозволяє графічно зображувати бульше елементів", "Попередження");
                             }
                         }
                     }
@@ -97,7 +97,7 @@ namespace kyrsova
         {
             try
             {
-                if (Math.Abs( int.Parse(textBox1.Text)) > 99)
+                if (Math.Abs(int.Parse(textBox1.Text)) > 99)
                     MessageBox.Show("Елемент не входить в діапазону");
                 else
                     set = int.Parse(textBox1.Text);
@@ -145,7 +145,8 @@ namespace kyrsova
             if (textBox1.Text != "")
             {
                 pictureBox1.Visible = true;
-                dsu.MakeSet(set);
+                try { dsu.MakeSet(set); }
+                catch (Exception exception) { MessageBox.Show(exception.Message); }
                 x1 = 100;
                 pictureBox1.Invalidate();
             }
@@ -159,14 +160,16 @@ namespace kyrsova
         {
             if (textBox2.Text != "")
             {
-                if (dsu.Find(find)<=dsu.parent2.Count)
+                try
                 {
-                    MessageBox.Show(Convert.ToString(dsu.Find(find)),"Номер множини, якій належить даний елемент");
                     x1 = dsu.Find(find);
+                    MessageBox.Show(x1.ToString(), "Номер множини, якій належить даний елемент");
                     pictureBox1.Invalidate();
                 }
-                else
-                    MessageBox.Show("Такого елементу не існує", "Помилка");
+                catch (KeyNotFoundException ex)
+                {
+                    MessageBox.Show(ex.Message); 
+                }
             }
             else
             {
@@ -178,8 +181,9 @@ namespace kyrsova
         {
             if (textBox3.Text != "" && textBox4.Text != "")
             {
-                dsu.Unite(setX, setY);
-                x1 = 100;  
+                try { dsu.UniteByNumbers(setX, setY); }
+                catch (Exception exception) { MessageBox.Show(exception.Message); }
+                x1 = 100;
             }
             else
             {
@@ -214,15 +218,16 @@ namespace kyrsova
         {
             if (textBox5.Text != "" && textBox6.Text != "")
             {
-                dsu.Unite2(X, Y);
+                try { dsu.UniteByElements(X, Y); }
+                catch (Exception exception) { MessageBox.Show(exception.Message); }
                 x1 = 100;
             }
             else
             {
-                MessageBox.Show("Заповніть правильно номера множин, які треба об'єднатfи", "Помилка вводу");
+                MessageBox.Show("Заповніть правильно номера множин, які треба об'єднатzи", "Помилка вводу");
             }
             pictureBox1.Invalidate();
         }
     }
-    
+
 }
